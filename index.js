@@ -1,4 +1,3 @@
-const { getMaxListeners } = require('events')
 const express=require('express')
 const app=express()
 
