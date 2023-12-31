@@ -3,6 +3,32 @@ const app=express()
 const cors=require('cors')
 app.use(cors())
 
+const {open}=require('sqlite')
+const sqlite3=require('sqlite3')
+const path=require('path')
+app.use(express.json())
+
+const dbPath=path.join(__dirname,"home_details.db")
+let db=null
+
+const initializeDbAndServer=async()=>{
+    try{
+    db=await open({
+        filename:dbPath,
+        driver:sqlite3.Database,
+    })
+    app.listen(7000,()=>{
+        console.log("Server:7000/")
+    })
+  }
+  catch (e) {
+    console.log(`DB Error: ${e.message}`);
+    process.exit(1);
+  }
+}
+
+initializeDbAndServer()
+
 const gamingVideos=[
             {
                 "id": "b214dc8a-b126-4d15-8523-d37404318347",
@@ -1199,6 +1225,14 @@ app.get('/gaming',(req,res)=>{
 })
 
 
-app.listen(7000,()=>{
-    console.log("Server starting at port:7000")
+app.get('/addHomeData',async(req,res)=>{
+    for(let indiv_details of homeVideos){
+        let {id ,title ,thumbnail_url,channel,view_count ,published_at}=indiv_details
+        let {name,profile_image_url}=channel
+        console.log(name)
+        const addQuery=`INSERT INTO Home (id, title, thumbnail_url, channel_name, channel_profile_image_url, view_count, published_at) 
+        VALUES ("${id}","${title}","${thumbnail_url}","${channel.name}","${channel.profile_image_url}","${view_count}","${published_at}");`
+        await db.run(addQuery)
+    }
+    res.send("Added Successfully!!")
 })
